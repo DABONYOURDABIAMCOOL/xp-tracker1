@@ -1,90 +1,93 @@
 <!DOCTYPE html>
-<html lang="="en">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>XP TRACKER</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <meta charset="UTF-8">
+    <title>XP TRACKER</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
-  <div class="opening-animation">LOCK IN 🔒</div>
+    <div class="opening-animation" id="vaultAnimation">
+        <div class="lock-text">LOCKING IN...</div>
+    </div>
 
-  <div class="main-container" style="display: none;">
     <div class="top-bar">
-      <h1 class="title">XP TRACKER</h1>
-      <div class="top-boxes">
-        <div class="top-box" id="date">{{ date }}</div>
-        <div class="top-box" id="class-rank">Rookie</div>
-      </div>
+        <div class="title">XP TRACKER</div>
+        <div class="info-boxes">
+            <div class="info-box">
+                <strong>Date:</strong> <span id="date">{{ date }}</span>
+            </div>
+            <div class="info-box">
+                <strong>Class:</strong> <span id="class">{{ user_data['class'] }}</span>
+            </div>
+            <div class="info-box">
+                <strong>Rank:</strong> <span contenteditable="true" id="rank">{{ user_data['rank'] }}</span>
+            </div>
+        </div>
     </div>
 
-    <select id="user-select">
-      <option selected disabled>Select User</option>
-    </select>
-
-    <div class="grid-container">
-      <!-- Left Panel: Stats -->
-      <div class="panel left">
-        <h2>Stats</h2>
-        <div class="stat">Strength: <span id="stat-strength">0</span></div>
-        <div class="stat">Intelligence: <span id="stat-intelligence">0</span></div>
-        <div class="stat">Endurance: <span id="stat-endurance">0</span></div>
-        <div class="stat">Looks: <span id="stat-looks">0</span></div>
-        <div class="stat">Mindset: <span id="stat-mindset">0</span></div>
-        <div class="stat total">Total: <span id="stat-total">0</span></div>
-        <div class="stat level">Level: <span id="level">0</span></div>
-        <div class="stat xp">XP: <span id="xp">0</span></div>
-        <div class="xp-bar">
-          <div class="xp-bar-fill"></div>
-        </div>
-      </div>
-
-      <!-- Middle Panel: Task List -->
-      <div class="panel middle">
-        <h2>Tasks</h2>
-        <div id="task-list"></div>
-        <button id="add-task-btn">Add Task</button>
-      </div>
-
-      <!-- Right Panel: Timer + Leaderboard -->
-      <div class="panel right">
-        <h2>Grind Timer</h2>
-        <select id="grind-select">
-          <option value="strength">Strength</option>
-          <option value="intelligence">Intelligence</option>
-          <option value="endurance">Endurance</option>
-          <option value="looks">Looks</option>
-          <option value="mindset">Mindset</option>
-        </select>
-        <div class="timer-buttons">
-          <button id="start-btn">Start</button>
-          <button id="pause-btn">Pause</button>
-          <button id="stop-btn">Stop</button>
+    <div class="main-content">
+        <div class="panel left-panel">
+            {% for stat in ['strength', 'intelligence', 'endurance', 'looks', 'mindset', 'xp', 'level'] %}
+            <div class="stat-block">
+                <img src="{{ url_for('static', filename='assets/icon_' + stat + '.png') }}" alt="{{ stat }}">
+                <div class="stat-label">{{ stat.capitalize() }}</div>
+                {% if stat in ['xp', 'level'] %}
+                    <div class="stat-value" id="{{ stat }}">{{ user_data[stat] }}</div>
+                {% else %}
+                    <div class="counter">
+                        <button class="btn-decrease" data-stat="{{ stat }}">−</button>
+                        <span class="stat-value" id="{{ stat }}">{{ user_data[stat] }}</span>
+                        <button class="btn-increase" data-stat="{{ stat }}">+</button>
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
 
-        <h2>Leaderboard</h2>
-        <div id="leaderboard">
-          {% for user, info in leaderboard.items() %}
-            <div class="lb-entry">{{ user }} — Level {{ info['level'] }}</div>
-          {% endfor %}
+        <div class="panel middle-panel">
+            <h2>To-Do List</h2>
+            <ul id="taskList">
+                {% for task in user_data['tasks'] %}
+                <li data-xp="{{ task['xp'] }}">
+                    <input type="checkbox" class="task-check"> 
+                    <span contenteditable="true" class="task-text">{{ task['text'] }}</span> 
+                    (<span contenteditable="true" class="task-xp">{{ task['xp'] }}</span> XP)
+                </li>
+                {% endfor %}
+            </ul>
+            <button id="addTaskBtn">Add Task</button>
         </div>
-      </div>
+
+        <div class="panel right-panel">
+            <h2>Timer</h2>
+            <select id="timerStat">
+                <option value="strength">Strength</option>
+                <option value="intelligence">Intelligence</option>
+                <option value="endurance">Endurance</option>
+                <option value="looks">Looks</option>
+                <option value="mindset">Mindset</option>
+            </select>
+            <div id="timerDisplay">00:00:00</div>
+            <button id="startBtn">Start</button>
+            <button id="pauseBtn">Pause</button>
+            <button id="stopBtn">Stop</button>
+        </div>
     </div>
 
-    <!-- Scroll Section -->
-    <div class="chart-section">
-      <div>
-        <h2>Stat Distribution</h2>
-        <canvas id="pie-chart"></canvas>
-      </div>
-      <div>
-        <h2>XP Progress</h2>
-        <canvas id="xp-line"></canvas>
-      </div>
+    <div class="bottom-panel">
+        <div class="charts">
+            <canvas id="pieChart" width="300" height="300"></canvas>
+            <canvas id="xpGraph" width="300" height="300"></canvas>
+        </div>
+        <div class="leaderboard">
+            <h2>Leaderboard</h2>
+            <ul>
+                {% for u in leaderboard %}
+                <li>{{ u['username'] }} — Lv {{ u['level'] }}</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
