@@ -1,146 +1,143 @@
-let userData;
-let activeUser = null;
-let interval = null;
-let selectedStat = "strength";
+document.addEventListener('DOMContentLoaded', () => {
+  const xpBar = document.getElementById('xp-bar');
+  const xpValue = document.getElementById('xp-value');
+  const levelValue = document.getElementById('level-value');
+  const totalStat = document.getElementById('total-stat');
+  const classBox = document.getElementById('class');
+  const todayBox = document.getElementById('today');
+  const rankBox = document.getElementById('rank');
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Animate opening
-  const anim = document.querySelector(".opening-animation");
-  setTimeout(() => {
-    anim.style.display = "none";
-    document.querySelector(".main-container").style.display = "flex";
-  }, 2500);
+  const taskList = document.getElementById('task-ul');
+  const taskInput = document.getElementById('task-input');
+  const xpInput = document.getElementById('xp-input');
+  const addTaskBtn = document.getElementById('add-task');
 
-  // Fetch user data
-  fetch("/get_user_data")
-    .then(res => res.json())
-    .then(data => {
-      userData = data;
-      const userSelect = document.getElementById("user-select");
-      Object.keys(userData).forEach(username => {
-        const option = document.createElement("option");
-        option.value = username;
-        option.textContent = username;
-        userSelect.appendChild(option);
-      });
-      updateUI();
-    });
+  const timerDisplay = document.getElementById('timer-display');
+  const timerStart = document.getElementById('timer-start');
+  const timerPause = document.getElementById('timer-pause');
+  const timerStop = document.getElementById('timer-stop');
+  const statSelect = document.getElementById('stat-select');
 
-  // Login switch
-  document.getElementById("user-select").addEventListener("change", (e) => {
-    activeUser = e.target.value;
-    updateUI();
-  });
+  let xp = 0;
+  let level = 0;
+  let timer = null;
+  let startTime = null;
+  let pausedTime = 0;
 
-  // Timer buttons
-  document.getElementById("start-btn").addEventListener("click", () => {
-    const stat = document.getElementById("grind-select").value;
-    selectedStat = stat;
-    startTimer(stat);
-  });
+  // Initial UI updates
+  updateXP(0);
+  const today = new Date().toLocaleDateString();
+  if (todayBox) todayBox.textContent = today;
 
-  document.getElementById("pause-btn").addEventListener("click", () => {
-    clearInterval(interval);
-  });
+  function updateXP(gain) {
+    xp += gain;
+    let levelUp = false;
+    const xpNeeded = (level + 1) * 100;
+    if (xp >= xpNeeded) {
+      xp -= xpNeeded;
+      level++;
+      levelUp = true;
+    }
+    const xpPercent = (xp / ((level + 1) * 100)) * 100;
+    xpBar.style.width = xpPercent + '%';
+    xpValue.textContent = `${xp} / ${(level + 1) * 100}`;
+    levelValue.textContent = level;
 
-  document.getElementById("stop-btn").addEventListener("click", () => {
-    stopTimer();
-  });
+    const classTitles = ['Rookie', 'Fighter', 'Elite', 'Warrior', 'Veteran', 'Champion', 'Master', 'Godslayer'];
+    const currentClass = classTitles[Math.floor(level / 10)] || 'Legend';
+    if (classBox) classBox.textContent = currentClass;
 
-  // Add task
-  document.getElementById("add-task-btn").addEventListener("click", () => {
-    const taskList = document.getElementById("task-list");
-    const task = document.createElement("div");
-    const nameInput = document.createElement("input");
-    const xpInput = document.createElement("input");
-    const checkbox = document.createElement("input");
-
-    nameInput.placeholder = "Task";
-    xpInput.type = "number";
-    xpInput.placeholder = "XP";
-    checkbox.type = "checkbox";
-
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) {
-        const xp = parseInt(xpInput.value) || 0;
-        gainXP(xp);
-        task.remove(); // Remove after check
-      }
-    });
-
-    task.appendChild(nameInput);
-    task.appendChild(xpInput);
-    task.appendChild(checkbox);
-    taskList.appendChild(task);
-  });
-});
-
-function updateUI() {
-  if (!activeUser) return;
-  const stats = userData[activeUser].stats;
-  const xp = userData[activeUser].xp;
-  const level = userData[activeUser].level;
-
-  Object.keys(stats).forEach(stat => {
-    const el = document.getElementById(`stat-${stat}`);
-    if (el) el.textContent = stats[stat];
-  });
-
-  document.getElementById("level").textContent = level;
-  document.getElementById("xp").textContent = xp;
-
-  const xpNeeded = 100 + 100 * level;
-  const fillPercent = Math.min(100, (xp / xpNeeded) * 100);
-  document.querySelector(".xp-bar-fill").style.width = fillPercent + "%";
-
-  // Update class
-  const classBox = document.getElementById("class-rank");
-  const classes = ["Rookie", "Apprentice", "Adept", "Elite", "Master", "Ascendant"];
-  const classIndex = Math.floor(level / 10);
-  classBox.textContent = classes[classIndex] || "Legend";
-}
-
-function gainXP(amount) {
-  if (!activeUser) return;
-  userData[activeUser].xp += amount;
-
-  // Level Up?
-  let xp = userData[activeUser].xp;
-  let level = userData[activeUser].level;
-  const xpNeeded = 100 + 100 * level;
-
-  if (xp >= xpNeeded) {
-    userData[activeUser].xp = xp - xpNeeded;
-    userData[activeUser].level++;
-    document.body.classList.add("level-up");
-    setTimeout(() => document.body.classList.remove("level-up"), 2000);
+    if (levelUp) {
+      animateLevelUp();
+    }
   }
 
-  saveData();
-  updateUI();
-}
+  function animateLevelUp() {
+    const msg = document.createElement('div');
+    msg.textContent = 'LEVEL UP!';
+    msg.style.position = 'fixed';
+    msg.style.top = '40%';
+    msg.style.left = '50%';
+    msg.style.transform = 'translate(-50%, -50%)';
+    msg.style.fontSize = '4rem';
+    msg.style.color = 'gold';
+    msg.style.zIndex = 1000;
+    msg.style.textShadow = '0 0 10px gold';
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 2000);
+  }
 
-function startTimer(stat) {
-  let time = 0;
-  interval = setInterval(() => {
-    time++;
-    if (time >= 3600) {
-      userData[activeUser].stats[stat]++;
-      saveData();
-      updateUI();
-      time = 0;
+  addTaskBtn.addEventListener('click', () => {
+    const name = taskInput.value.trim();
+    const xp = parseInt(xpInput.value.trim(), 10);
+    if (name && !isNaN(xp)) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${name} (+${xp} XP)</span><button class="check">✓</button>`;
+      taskList.appendChild(li);
+      li.querySelector('.check').addEventListener('click', () => {
+        updateXP(xp);
+        li.remove();
+      });
+      taskInput.value = '';
+      xpInput.value = '';
     }
-  }, 1000); // Every second
-}
-
-function stopTimer() {
-  clearInterval(interval);
-}
-
-function saveData() {
-  fetch("/save_user_data", {
-    method: "POST",
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData)
   });
-}
+
+  // TIMER
+  function updateTimerDisplay(seconds) {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    timerDisplay.textContent = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+
+  timerStart.addEventListener('click', () => {
+    if (!timer) {
+      startTime = Date.now() - pausedTime;
+      timer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        updateTimerDisplay(elapsed);
+      }, 1000);
+    }
+  });
+
+  timerPause.addEventListener('click', () => {
+    if (timer) {
+      clearInterval(timer);
+      pausedTime = Date.now() - startTime;
+      timer = null;
+    }
+  });
+
+  timerStop.addEventListener('click', () => {
+    if (timer) {
+      clearInterval(timer);
+    }
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const fullHours = Math.floor(elapsed / 3600);
+    const stat = statSelect.value;
+    if (stat && fullHours > 0) {
+      const statEl = document.getElementById(stat);
+      if (statEl) {
+        const old = parseInt(statEl.textContent, 10);
+        statEl.textContent = old + fullHours;
+      }
+      const allStats = ['intelligence', 'strength', 'endurance', 'looks', 'mindset'];
+      let total = 0;
+      allStats.forEach(s => {
+        const el = document.getElementById(s);
+        total += parseInt(el.textContent, 10);
+      });
+      totalStat.textContent = total;
+    }
+    updateTimerDisplay(0);
+    pausedTime = 0;
+    timer = null;
+  });
+
+  // Opening vault animation
+  const openingScreen = document.querySelector('.opening-screen');
+  setTimeout(() => {
+    if (openingScreen) openingScreen.remove();
+  }, 4000);
+});
