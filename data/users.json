@@ -1,50 +1,35 @@
 {
   "chanakya": {
     "password": "chanakya",
+    "intelligence": 4,
+    "strength": 1,
+    "endurance": 3,
+    "looks": 1,
+    "mindset": 3,
+    "level": 0,
     "xp": 0,
-    "level": 1,
-    "class": "Rookie",
-    "rank": "None",
-    "stats": {
-      "Intelligence": 4,
-      "Strength": 1,
-      "Endurance": 3,
-      "Looks": 1,
-      "Mindset": 3
-    },
-    "tasks": [],
-    "xp_history": {}
+    "tasks": []
   },
   "nikhil": {
     "password": "nikhil",
+    "intelligence": 3,
+    "strength": 4,
+    "endurance": 2,
+    "looks": 1,
+    "mindset": 2,
+    "level": 0,
     "xp": 0,
-    "level": 1,
-    "class": "Rookie",
-    "rank": "None",
-    "stats": {
-      "Intelligence": 3,
-      "Strength": 4,
-      "Endurance": 2,
-      "Looks": 1,
-      "Mindset": 2
-    },
-    "tasks": [],
-    "xp_history": {}
+    "tasks": []
   },
   "neeraj": {
     "password": "neeraj",
+    "intelligence": 2,
+    "strength": 5,
+    "endurance": 3,
+    "looks": 1,
+    "mindset": 1,
+    "level": 0,
     "xp": 0,
-    "level": 1,
-    "class": "Rookie",
-    "rank": "None",
-    "stats": {
-      "Intelligence": 2,
-      "Strength": 5,
-      "Endurance": 3,
-      "Looks": 1,
-      "Mindset": 1
-    },
-    "tasks": [],
-    "xp_history": {}
+    "tasks": []
   }
 }
