@@ -1,0 +1,50 @@
+{
+  "chanakya": {
+    "password": "chanakya",
+    "xp": 0,
+    "level": 1,
+    "class": "Rookie",
+    "rank": "None",
+    "stats": {
+      "Intelligence": 4,
+      "Strength": 1,
+      "Endurance": 3,
+      "Looks": 1,
+      "Mindset": 3
+    },
+    "tasks": [],
+    "xp_history": {}
+  },
+  "nikhil": {
+    "password": "nikhil",
+    "xp": 0,
+    "level": 1,
+    "class": "Rookie",
+    "rank": "None",
+    "stats": {
+      "Intelligence": 3,
+      "Strength": 4,
+      "Endurance": 2,
+      "Looks": 1,
+      "Mindset": 2
+    },
+    "tasks": [],
+    "xp_history": {}
+  },
+  "neeraj": {
+    "password": "neeraj",
+    "xp": 0,
+    "level": 1,
+    "class": "Rookie",
+    "rank": "None",
+    "stats": {
+      "Intelligence": 2,
+      "Strength": 5,
+      "Endurance": 3,
+      "Looks": 1,
+      "Mindset": 1
+    },
+    "tasks": [],
+    "xp_history": {}
+  }
+}
